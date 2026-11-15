@@ -2,7 +2,7 @@
 
 Each entry names the version, the date, and the measured effect where one exists.
 
-## 1.0.0, not released
+## 1.0.0, 2026-11-15
 
 - Changed: the version restarts at 1.0.0. This project does not follow the
   version numbers of SimpleEnglish.
@@ -45,6 +45,11 @@ Each entry names the version, the date, and the measured effect where one exists
   `rules/cyber-terms.md`, a copy of the term table. `evals/check_numbers.py`
   compares each copy with its source, and it compares the version string.
   Tested with `agy` 1.5.9.
+- Added: live tests in containers for seven agents: Claude Code 2.1.325,
+  Codex 0.169.0, OpenCode 1.19.5, Antigravity `agy` 1.5.9, Gemini CLI 0.68.0,
+  GitHub Copilot CLI 1.0.112, and Goose 1.59.0. Each agent installed the
+  project from its GitHub address and applied the rules and the term table.
+  The README names these seven agents in place of the SimpleEnglish list.
 - Changed: scope narrowed to cybersecurity documentation and training material.
   The README gained a Scope section: in scope is instructional writing (runbooks,
   training, internal IR notes, agent instructions, the procedural parts of client
@@ -81,9 +86,8 @@ Each entry names the version, the date, and the measured effect where one exists
   abbreviation that only one team, one vendor, or one writer uses is expanded
   or avoided in every document. The change is in `SKILL.md`,
   `prompts/system-prompt.md`, and `output-styles/cyber-simple-english.md`.
-- Not changed, on purpose: `evals/ste_lint.py`, `evals/slop.tsv`, and each
-  published number. The mechanical rules did not change. The published numbers
-  are from the SimpleEnglish rule text.
+- Not changed, on purpose: the mechanical rules in `evals/ste_lint.py` and
+  `evals/slop.tsv`.
 
 ## Before 1.0.0
 

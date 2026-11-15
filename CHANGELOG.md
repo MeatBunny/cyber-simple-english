@@ -58,8 +58,10 @@ Each entry names the version, the date, and the measured effect where one exists
   skill never expands (CVE, CVSS, CWE, MITRE ATT&CK, YARA, Sigma). It holds 34 rulings for terms with two senses and for word pairs, 32 terms to
   replace, 9 idioms to replace, and 8 groups of marketing words to delete. The table is new work of this project
   and holds no ASD dictionary content.
-- Changed: `SKILL.md` carries a checked copy of the three replace tables of
-  `cyber-terms.md`, so an agent that loads only the skill applies them.
+- Changed: `SKILL.md` carries a checked copy of the last four tables of
+  `cyber-terms.md` (terms to constrain, terms to replace, idioms to replace,
+  marketing words to delete), so an agent that loads only the skill applies
+  them.
   `cyber-terms.md` starts with a contents list.
 - Added: `tools/ste-dictionary/ste_dict_lint.py` reports a `cyber` count. It
   reads the lintable rows from `cyber-terms.md`, so no second copy of the list

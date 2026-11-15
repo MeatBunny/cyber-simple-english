@@ -14,7 +14,7 @@ Cyber Simple English is based on [SimpleEnglish](https://github.com/AminBlg/Simp
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat" alt="MIT"></a>
 </p>
 
-Works in every agent that reads the [Agent Skills standard](https://agentskills.io): Claude Code, Cursor, VS Code Copilot, OpenAI Codex, Gemini CLI, Goose, OpenCode, and others. One folder, no dependencies, MIT.
+Tested in seven agents: Claude Code, OpenAI Codex, OpenCode, Google Antigravity, Gemini CLI, GitHub Copilot CLI, and Goose. Other agents that read the [Agent Skills standard](https://agentskills.io) can install the skill, but this project does not test them. One folder, no dependencies, MIT.
 
 ## Scope
 
@@ -43,7 +43,7 @@ Some documents mix both kinds. A pentest report has evaluative findings and proc
 
 ## Install
 
-Any agent, with the [skills CLI](https://github.com/vercel-labs/skills):
+Gemini CLI, GitHub Copilot CLI, Goose, and each other agent that reads the Agent Skills standard, with the [skills CLI](https://github.com/vercel-labs/skills):
 
 ```bash
 npx skills add MeatBunny/cyber-simple-english

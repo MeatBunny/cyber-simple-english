@@ -9,7 +9,7 @@ Checks:
 - The rule block: prompts/system-prompt.md, rules/AGENTS.md, and output-styles/cyber-simple-english.md
   carry the same text, and SKILL.md carries the same reply rules.
 - rules/cyber-terms.md is a copy of the term table in the skill, after its frontmatter.
-- SKILL.md carries a copy of the term table from "## Terms to replace" to the end.
+- SKILL.md carries a copy of the term table from "## Terms to constrain" to the end.
 - The version string in SKILL.md, the four manifests, and the README badge.
 
 The project publishes no benchmark numbers yet. When it does, add the check of
@@ -45,8 +45,8 @@ def sync():
     if prompt != style:
         problems.append("rule block differs between prompts/system-prompt.md and output-styles/cyber-simple-english.md")
     skill = (ROOT / "skills" / "cyber-simple-english" / "SKILL.md").read_text(encoding="utf-8")
-    if table[table.index("## Terms to replace"):].rstrip("\n") not in skill:
-        problems.append("SKILL.md copy of the replace tables differs from cyber-terms.md. Make the copy again.")
+    if table[table.index("## Terms to constrain"):].rstrip("\n") not in skill:
+        problems.append("SKILL.md copy of the constrain and replace tables differs from cyber-terms.md. Make the copy again.")
     for phrase in ("Answer in prose", "No em-dashes", "No contractions", "first sentence gives the answer",
                    "Condition before command", "make sure that", "Never touch"):
         for name, text in (("SKILL.md", skill), ("prompts/system-prompt.md", prompt)):

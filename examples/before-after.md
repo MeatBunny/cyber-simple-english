@@ -1,63 +1,114 @@
 # Before / after
 
-Every "before" below is genuine unedited AI output (Claude Sonnet, July 2026, no skill loaded). Every "after" is the same content with the skill applied.
+Each "before" below is unedited model output (Claude Sonnet, November 2026, no skill loaded). Each "after" is the same content, rewritten with the skill loaded and then corrected where it broke a rule.
 
 ## 1. README introduction (descriptive)
 
-**Before — 1 sentence of 30 words, one of 33, a dangling "-ing" clause:**
+**Before:**
 
-> sqlpipe is a command-line tool for syncing PostgreSQL tables to Amazon S3 as Parquet files. It's built for teams who need a lightweight way to move data out of Postgres into a data lake without standing up a full ETL platform. sqlpipe connects directly to your database, reads table data in batches, converts it to columnar Parquet, and writes the result to an S3 bucket of your choosing. It supports full table snapshots as well as incremental syncs based on a watermark column, so you can run it once for a backfill or schedule it to run continuously. Configuration lives in a single YAML file, making it easy to version-control your sync definitions alongside the rest of your infrastructure code.
+> `iocscan` is a command-line tool that checks the endpoints of your organization for indicators of compromise (IOCs). It takes file hashes, domains and IP addresses from a threat intelligence feed and searches for them by querying your EDR's API. That way you don't have to look through each host by hand. Any matches are written to a CSV file or sent to your SIEM. You can run `iocscan` once, for example during an incident, or on a schedule so that new indicators are checked as the feed updates. All settings, including the feed, the EDR connection and the output destination, are in a single YAML file.
 
-**After — max sentence 21 words, one topic per paragraph:**
+**After: one topic per paragraph, no contraction, no "-ing" clause:**
 
-> sqlpipe is a command-line tool that copies PostgreSQL tables to Amazon S3 as Parquet files. It moves data into a data lake without a full ETL platform.
+> The `iocscan` command-line tool searches the endpoints of your organization for IOCs. It reads file hashes, domains, and IP addresses from a threat intelligence feed. It then queries the API of your EDR for each indicator, so you do not search each host by hand.
 >
-> sqlpipe connects to your database and reads each table in batches. It converts the batches to Parquet and writes them to your S3 bucket. It can copy a full table, or only the new rows after a watermark column. Run it once for a backfill, or on a schedule.
+> The tool writes each match to a CSV file or sends it to your SIEM.
 >
-> The configuration is one YAML file. You can keep this file in version control with your infrastructure code.
-
-## 2. Troubleshooting section (procedural)
-
-**Before — 40-word sentences, contractions, conditions after commands:**
-
-> **Connection timeouts.** If sqlpipe hangs or fails with `dial tcp: i/o timeout`, check that the host running sqlpipe can reach the Postgres port (usually 5432) — this is often a security group or firewall rule blocking the connection. If you're connecting to a managed database (RDS, Cloud SQL, etc.), confirm the instance allows connections from sqlpipe's IP. You can also try increasing `source.connect_timeout_seconds` in your config, since a slow network path can trip the default timeout even when the connection eventually succeeds.
-
-**After — one instruction per sentence, condition first, one verb for "check":**
-
-> **Connection timeouts.** sqlpipe stops with `dial tcp: i/o timeout` when it cannot reach the Postgres port (5432 by default).
+> You can run `iocscan` once, for example during an incident. You can also run it on a schedule. When the feed updates, `iocscan` checks the new indicators.
 >
-> 1. Make sure that the host that runs sqlpipe can reach the Postgres port. A firewall or security group usually blocks it.
-> 2. If the database is managed (RDS, Cloud SQL), make sure that the instance accepts connections from the IP of sqlpipe.
-> 3. If the network is slow, increase `source.connect_timeout_seconds` in the configuration.
+> You set the feed, the EDR connection, and the output destination in one YAML file.
 
-## 3. Error message
+## 2. Runbook entry (procedural)
+
+**Before (the first part of the entry): bold lead-ins, several instructions in one step:**
+
+> ## Agent not reporting
+>
+> **Symptom:** The EDR console shows a Windows host as offline or stale, with no telemetry received within the expected interval.
+>
+> **Likely causes:** The `edr-agent` service is stopped, the host cannot reach the EDR cloud on TCP 443, or the host clock is wrong and TLS validation fails.
+>
+> **Triage steps** (run in an elevated PowerShell session on the host, or via remote shell):
+>
+> 1. **Check the service.**
+>    ```powershell
+>    Get-Service edr-agent
+>    ```
+>    If the status is `Stopped`, start it with `Start-Service edr-agent` and confirm it stays `Running`. If it stops again, check the Windows Event Log (Service Control Manager and the agent's own log) for the reason. Also check whether the stop was unexpected, since an agent stopped by an unauthorized user may indicate tampering. Escalate to IR if so.
+
+**After: one instruction per sentence, condition first, one verb for "check":**
+
+> # Agent not reporting
+>
+> The EDR console shows a Windows host as offline or stale. The console received no telemetry from the host within the expected interval.
+>
+> ## Likely causes
+>
+> - The `edr-agent` service is stopped.
+> - The host cannot connect to the EDR cloud on TCP port 443.
+> - The host clock is wrong, and TLS validation fails.
+>
+> ## Triage steps
+>
+> Run each command in a PowerShell session with administrator permissions on the host, or through a remote shell.
+>
+> 1. Make sure that the service runs.
+>
+>    ```powershell
+>    Get-Service edr-agent
+>    ```
+>
+> 2. If the status is `Stopped`, run `Start-Service edr-agent`.
+> 3. Make sure that the status stays `Running`.
+> 4. If the service stops again, read the Windows Event Log to find the reason.
+> 5. If an unauthorized user stopped the agent, escalate the incident to IR. The stop can be a sign of tampering.
+
+## 3. Error message for an end user (layperson)
 
 **Before:**
 
-> Oops! Something went wrong while attempting to establish a connection to the database. Please ensure your credentials have been properly configured and try again, or reach out to your administrator if the issue persists.
+> That code didn't work. It may be incorrect or expired. Check that you entered the latest code from your authenticator app, then try again. Codes refresh every 30 seconds. If you keep having trouble, contact your IT help desk.
 
 **After:**
 
-> Connection to the database failed: the password for user `app` was not correct.
-> Set `DB_PASSWORD` to the correct value, then connect again.
-> If the error continues, ask your database administrator for access.
+> The sign-in failed. The code was not correct, or it expired.
+> Open your authenticator app. Type the new code, then sign in again.
+> If the problem continues, contact your IT help desk.
 
-## 4. Incident report (descriptive, simple past)
+## 4. Incident summary for the shift handover (descriptive, simple past)
 
 **Before:**
 
-> We have identified an issue that may have impacted some users' ability to access the service. Our team has been working diligently to resolve this and services have now been fully restored. We sincerely apologize for any inconvenience this may have caused.
+> At 09:12 UTC today, a finance user entered their password on a fake Microsoft 365 sign-in page delivered by a phishing email. At 09:20, an attacker signed in to the account from an unfamiliar IP address and created an inbox forwarding rule. The SOC disabled the account and revoked all sessions at 09:41, and the forwarding rule has been removed. The same email went to 14 other recipients, and none of them clicked the link. The sender domain is now blocked. No further action is outstanding on containment. Follow-up items for the next shift are to confirm with the user that the account is safe to restore after a password reset and MFA check, and to review the mailbox audit log for anything forwarded or accessed between 09:20 and 09:41.
 
 **After:**
 
-> Between 14:02 and 14:31 UTC, 12% of requests to the API failed with HTTP 502. A deploy at 14:00 removed the cache warmup step, and the cache nodes overloaded. We reverted the deploy at 14:27. All requests succeeded from 14:31. We will add a warmup check to the deploy pipeline this week.
+> A phishing email sent a fake Microsoft 365 sign-in page to a finance user. At 09:12 UTC, the user typed a password on the page. At 09:20 UTC, the attacker signed in to the account from an unfamiliar IP address and created an inbox forwarding rule. At 09:41 UTC, the SOC disabled the account and revoked all sessions.
+>
+> The SOC removed the forwarding rule and blocked the sender domain. The same email went to 14 other recipients, and none of them clicked the link.
+>
+> The next shift has two tasks. After the password reset and the MFA check, make sure with the user that the account is safe to restore. Review the mailbox audit log for the items that the attacker forwarded or opened between 09:20 UTC and 09:41 UTC.
 
 ## 5. Breaking change in release notes
 
 **Before:**
 
-> Please note that we've made some changes to the users endpoint that may require updates to your integration. The `name` field has been deprecated in favor of separate `first_name` and `last_name` fields, so you'll want to update your code accordingly.
+> **Breaking change: `src_ip` renamed to `source.ip` in alert output**
+>
+> Starting in 4.0, the source IP address in alert output is in the `source.ip` field, which follows the Elastic Common Schema (ECS). It was previously `src_ip`.
+>
+> **Who is affected:** Any SIEM dashboard, saved search, detection or correlation query, or SOAR playbook that reads `src_ip` from alerts produced by this rule pack.
+>
+> **What to do:** Change every reference to `src_ip` to `source.ip` before you rely on 4.0 alert output. The value and format are unchanged. Only the field name is different.
+>
+> **Transition period:** For now, alerts include both `source.ip` and `src_ip`. The deprecated `src_ip` field will be removed after **2027-03-01**. Anything that still reads it will stop working after that date, so finish the migration before then.
 
 **After:**
 
-> **Breaking:** Update your calls to `/v2/users`. The `name` field split into `first_name` and `last_name`. The `name` field will return null after 2026-09-01.
+> Breaking: change each reference to `src_ip` to `source.ip` before you use the alert output of version 4.0.
+>
+> In version 4.0, the source IP address in alert output is in the `source.ip` field, which follows the Elastic Common Schema. In earlier versions, the field was `src_ip`. The value and the format did not change.
+>
+> The change affects each SIEM dashboard, saved search, detection query, and SOAR playbook that reads `src_ip` from the alerts of this rule pack.
+>
+> Until 2027-03-01, alerts include `source.ip` and `src_ip`. After that date, the rule pack does not send `src_ip`.

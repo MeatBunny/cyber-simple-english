@@ -4,10 +4,11 @@
 PostToolUse (Write|Edit on a .md file): lint the file with evals/ste_lint.py
 and, when it has violations, print the offending text and line number for
 each hit (capped at MAX_HOOK_HITS) to stderr and exit 2 so the model sees
-it. Exit 2 on PostToolUse is advisory: the tool already ran. Agent-internal
+it. The same check names each cybersecurity term that
+skills/cyber-simple-english/references/cyber-terms.md says to replace. Exit 2 on PostToolUse is advisory: the tool already ran. Agent-internal
 Markdown, such as memory files under the Claude configuration directory, is
 skipped. The writing rules do not govern it, and a summary of its
-violations only spends tokens. Set SIMPLE_ENGLISH_LINT_EXCLUDE to skip more
+violations only spends tokens. Set CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE to skip more
 paths.
 
 Stop: read `last_assistant_message`, check the reply register (no headers,
@@ -24,6 +25,7 @@ import sys
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 sys.path.insert(0, str(ROOT / "evals"))
+sys.path.insert(0, str(ROOT / "tools" / "ste-dictionary"))
 
 MAX_HOOK_HITS = 12
 CLAUDE_DIR = ".claude"
@@ -37,6 +39,16 @@ def load_linter():
         return ste_lint
     except Exception:  # noqa: BLE001
         return None
+
+
+def cyber_lines(text):
+    """One line for each cyber term to replace. The dictionary and slop tables stay out."""
+    try:
+        import ste_dict_lint  # noqa: WPS433
+        hits = ste_dict_lint.lint(text, ste_dict_lint.EMPTY, ste_dict_lint.EMPTY)["cyber_hits"]
+    except Exception:  # noqa: BLE001
+        return []
+    return [f"  cyber term: {entry}" for entry in dict.fromkeys(h["entry"] for h in hits)]
 
 
 def strip_code(text):
@@ -62,7 +74,7 @@ def variants(path):
 def excluded(target):
     """True for agent-internal Markdown and for the paths the user excludes."""
     config_dirs = variants(absolute(os.environ.get("CLAUDE_CONFIG_DIR") or f"~/{CLAUDE_DIR}"))
-    raw = os.environ.get("SIMPLE_ENGLISH_LINT_EXCLUDE", "").split(os.pathsep)
+    raw = os.environ.get("CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE", "").split(os.pathsep)
     patterns = [os.path.expanduser(p) for p in raw if p]
     for form in variants(target):
         if CLAUDE_DIR in form.parts or any(form.is_relative_to(d) for d in config_dirs):
@@ -87,14 +99,17 @@ def post_tool_use(event):
     except OSError:
         return 0
     report = lint.lint(text, "descriptive")
-    if not report["violations_total"]:
+    cyber = cyber_lines(text)
+    if not report["violations_total"] and not cyber:
         return 0
     detail = lint.lint_detail(text, "descriptive")
-    lines = [f"simple-english: {target.name} has {report['violations_total']} STE violations."]
+    lines = [f"cyber-simple-english: {target.name} has {report['violations_total']} STE violations"
+             f" and {len(cyber)} cyber term(s) to replace."]
     for h in detail[:MAX_HOOK_HITS]:
         lines.append(f"  line {h['line']}, {h['category']}: {h['text']}")
     if len(detail) > MAX_HOOK_HITS:
         lines.append(f"  and {len(detail) - MAX_HOOK_HITS} more hit(s).")
+    lines += cyber[:MAX_HOOK_HITS]
     lines.append("Fix these hits in the file you just wrote, then continue.")
     sys.stderr.write("\n".join(lines) + "\n")
     return 2
@@ -117,7 +132,7 @@ def stop(event):
     if CLOSERS.search(reply):
         problems.append("a filler closer")
     if problems:
-        print(json.dumps({"systemMessage": "simple-english reply check: " + "; ".join(problems) + ". Answer in prose."}))
+        print(json.dumps({"systemMessage": "cyber-simple-english reply check: " + "; ".join(problems) + ". Answer in prose."}))
     return 0
 
 

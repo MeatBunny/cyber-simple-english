@@ -7,9 +7,14 @@ each word in the text that the standard does not approve, with the approved
 alternatives.
 
 It also reads `slop.tsv` and reports LLM-tell words as a separate count. These
-are the high-consensus terms (8 or more independent published ban lists) that
+are terms from the SimpleEnglish lexicon (its count: 8 or more published ban lists) that
 the STE dictionary does not rule on. The two counts do not overlap: a word in
 both lexicons counts as a dictionary hit only.
+
+It also reads the cybersecurity term table of this project,
+`skills/cyber-simple-english/references/cyber-terms.md`, and reports the terms to
+replace as a third count. The dictionary files are optional: without them the
+dictionary count is zero and the slop and cyber counts still work.
 
 Known ceiling: the match is on the base form and on simple inflections
 (-s, -es, -ed, -ing, -ly). It does not do part-of-speech disambiguation, so a
@@ -31,6 +36,8 @@ import sys
 HERE = pathlib.Path(__file__).resolve().parent
 TSV = HERE / "not-approved.tsv"
 SLOP_TSV = HERE.parent.parent / "evals" / "slop.tsv"
+CYBER_MD = HERE.parent.parent / "skills" / "cyber-simple-english" / "references" / "cyber-terms.md"
+EMPTY = ({}, [])
 
 
 def approved_words(path=HERE / "approved.txt"):
@@ -48,6 +55,8 @@ def load(path=TSV):
     a large number of false hits.
     """
     table, phrases = {}, []
+    if not path.exists() or not (HERE / "approved.txt").exists():
+        return table, phrases  # no local copy of the dictionary: the other counts still work
     ok = approved_words()
     for line in path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
@@ -70,7 +79,7 @@ def load(path=TSV):
 def load_slop(path=SLOP_TSV):
     """Same shapes as load(), from the LLM-tell lexicon.
 
-    Columns: term, count of independent ban lists that name it, replacement.
+    Columns: term, count of ban lists that name it (counted by SimpleEnglish), replacement.
     Terms that the STE dictionary already rules on are not in this file.
     """
     table, phrases = {}, []
@@ -88,6 +97,33 @@ def load_slop(path=SLOP_TSV):
         else:
             for form in forms(word):
                 table.setdefault(form, entry)
+    return table, phrases
+
+
+def load_cyber(path=CYBER_MD):
+    """Same shapes as load(), from the cyber term table of this project.
+
+    The Markdown file is the source. A table row whose last cell is "yes" is
+    a lintable row: cell 1 holds the terms, separated by commas, and cell 2
+    holds the replacement. A phrase also matches with a plural "s".
+    Abbreviations are not checked: the audience decides if a text expands them.
+    """
+    table, phrases = {}, []
+    if not path.exists():
+        return table, phrases
+    for line in path.read_text(encoding="utf-8").splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 3 or cells[-1] != "yes":
+            continue
+        for term in cells[0].replace("`", "").lower().split(","):
+            term = term.strip()
+            entry = f"{term} -> {cells[1]}"
+            if not term.replace("-", "").isalpha():  # a phrase, or a form such as "c&c"
+                phrases.append((re.compile(r"\b" + r"\s+".join(map(re.escape, term.split())) + r"s?\b",
+                                           re.I), entry))
+            else:
+                for form in forms(term):
+                    table.setdefault(form, entry)
     return table, phrases
 
 
@@ -116,6 +152,8 @@ TECHNICAL_NOUNS = {
     "stage", "stages", "process", "processes", "transfer", "log", "logs",
     "backup", "settings", "load", "progress", "design", "key", "list", "form",
     "record", "records", "table", "tables",
+    # cybersecurity: the technical nouns and verbs that the dictionary flags
+    "scan", "scans", "block", "blocks", "alert", "alerts", "event", "events",
 }
 
 
@@ -127,17 +165,20 @@ def strip_code(text):
     return text
 
 
-def lint(text, table=None, slop=None):
+def lint(text, table=None, slop=None, cyber=None):
     table, phrases = load() if table is None else table
     slop_table, slop_phrases = load_slop() if slop is None else slop
+    cyber_table, cyber_phrases = load_cyber() if cyber is None else cyber
     body = strip_code(text)
     words = re.findall(r"[A-Za-z][A-Za-z'\-]*", body)
-    hits, slop_hits = [], []
+    hits, slop_hits, cyber_hits = [], [], []
     for w in words:
         entry = table.get(w.lower())
         if entry:
             hits.append({"used": w, "entry": entry})
-        elif (s := slop_table.get(w.lower())):  # dictionary wins on overlap
+        elif (c := cyber_table.get(w.lower())):  # dictionary wins on overlap, then cyber
+            cyber_hits.append({"used": w, "entry": c})
+        elif (s := slop_table.get(w.lower())):
             slop_hits.append({"used": w, "entry": s})
     for rx, entry in phrases:
         for m in rx.finditer(body):
@@ -145,6 +186,9 @@ def lint(text, table=None, slop=None):
     for rx, entry in slop_phrases:
         for m in rx.finditer(body):
             slop_hits.append({"used": m.group(0), "entry": entry})
+    for rx, entry in cyber_phrases:
+        for m in rx.finditer(body):
+            cyber_hits.append({"used": m.group(0), "entry": entry})
     n = max(len(words), 1)
     residual = [h for h in hits if h["used"].lower() not in TECHNICAL_NOUNS]
     return {
@@ -155,15 +199,18 @@ def lint(text, table=None, slop=None):
         "residual_per_100w": round(100 * len(residual) / n, 2),
         "slop": len(slop_hits),
         "slop_per_100w": round(100 * len(slop_hits) / n, 2),
+        "cyber": len(cyber_hits),
+        "cyber_per_100w": round(100 * len(cyber_hits) / n, 2),
         "hits": hits,
         "slop_hits": slop_hits,
+        "cyber_hits": cyber_hits,
     }
 
 
 def self_test():
     table = ({f: "x" for f in forms("utilize")},
              [(re.compile(r"\bprior\s+to\b", re.I), "prior to -> BEFORE (prep)")])
-    empty = ({}, [])
+    empty = EMPTY
     r = lint("Utilize the tool prior to launch. `utilize` stays.", table, empty)
     assert r["not_approved"] == 2, r
     assert r["words"] == 7, r  # the code span is removed before the count
@@ -177,6 +224,19 @@ def self_test():
     both = ({f: "x" for f in forms("delve")}, [])
     r4 = lint("Delve deeper.", both, slop)
     assert r4["not_approved"] == 1 and r4["slop"] == 0, r4
+    # cyber table: read from the shipped Markdown file, separate count
+    cyber = load_cyber()
+    r5 = lint("Remediate the host. The bad actors pivoted. This military-grade tool stays.", empty, empty, cyber)
+    assert r5["cyber"] == 3 and r5["not_approved"] == 0 and r5["slop"] == 0, r5
+    r6 = lint("The log contains the exploit. Threat hunting found the compromised host. "
+              "Escalate the alert. Remediation is complete. `remediate` stays.", empty, empty, cyber)
+    assert r6["cyber"] == 0, r6  # guidance-only terms, nouns, and code spans are not flagged
+    # standard abbreviations pass with no expansion; the wrong form is flagged
+    r7 = lint("Open the SIEM. The IOCs are in the ticket. The C&C server is down.", empty, empty, cyber)
+    assert [h["used"] for h in r7["cyber_hits"]] == ["C&C"], r7
+    r8 = lint("The malware phoned home. The team spun up a host and put it in the sandbox.", empty, empty, cyber)
+    assert r8["cyber"] == 2, r8  # idioms, with their listed verb forms
+    assert lint("Mitigate the risk.", load(HERE / "no-such-file.tsv"), empty, cyber)["cyber"] == 1
     print("self-test ok")
 
 

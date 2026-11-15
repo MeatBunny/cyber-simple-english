@@ -2,10 +2,9 @@
 
 Files are named <model>__<condition>__<scenario>.txt, or
 <condition>__<scenario>.txt for a single-model run. Prints one row per
-model and a pooled row. This reproduces the tables in
-evals/results/opencode-*/RESULTS.md and evals/results/openai-*/RESULTS.md.
+model and a pooled row.
 
-    python3 evals/score_text_dir.py evals/results/openai-2026-09-01/raw
+    python3 evals/score_text_dir.py path/to/raw
 """
 import json
 import pathlib

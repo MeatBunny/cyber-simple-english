@@ -1,62 +1,113 @@
+# cyber-simple-english
+
+Cyber Simple English is based on [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) by AminBlg. AminBlg wrote the rule engine, the skill, and the eval harness. This project adapts them for cybersecurity documentation and training.
+
 <p align="center">
-  <strong>✈️ your AI writes like a LinkedIn post. make it write like a Boeing manual.</strong>
+  An agent skill that makes LLMs write clear, unambiguous cybersecurity documentation and training material.<br>
+  Built on the writing rules of <a href="https://www.asd-ste100.org/">ASD-STE100 Simplified Technical English</a>, the controlled language aerospace has used since 1983 so a tired mechanic cannot misread an instruction.<br>
+  Plain by default, strict on request.
 </p>
 
 <p align="center">
-  An agent skill that makes LLMs write plain English with the discipline of <a href="https://www.asd-ste100.org/">ASD-STE100 Simplified Technical English</a>,<br>
-  the controlled language aerospace has used since 1983 so that a tired mechanic cannot misread an instruction.<br>
-  Layman-readable by default, STE-strict on request.
-</p>
-
-<p align="center">
-  <a href="evals/results/rebuild-2026-09-02/RESULTS.md"><img src="https://img.shields.io/badge/reply_defects-%E2%88%9295%25_measured-brightgreen?style=flat" alt="95% fewer visible reply defects, measured"></a>
-  <a href="evals/results/RESULTS.md"><img src="https://img.shields.io/badge/benchmarked_on-9_Claude_models-blueviolet?style=flat" alt="9 models benchmarked"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/SKILL.md-open_standard-blue?style=flat" alt="Agent Skills"></a>
-  <a href="skills/simple-english/SKILL.md"><img src="https://img.shields.io/badge/version-2.1.1-blue?style=flat" alt="version 2.1.1"></a>
+  <a href="skills/cyber-simple-english/SKILL.md"><img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat" alt="version 1.0.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat" alt="MIT"></a>
-  <a href="https://github.com/AminBlg/SimpleEnglish/stargazers"><img src="https://img.shields.io/github/stars/AminBlg/SimpleEnglish?style=flat&logo=github&color=yellow" alt="GitHub stars"></a>
 </p>
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/97933?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-97933" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/97933/daily" alt="AminBlg%2FSimpleEnglish | Trendshift" width="250" height="55"/></a>
-</p>
+Works in every agent that reads the [Agent Skills standard](https://agentskills.io): Claude Code, Cursor, VS Code Copilot, OpenAI Codex, Gemini CLI, Goose, OpenCode, and others. One folder, no dependencies, MIT.
 
-Works in every agent that reads the [Agent Skills standard](https://agentskills.io): Claude Code, Cursor, VS Code Copilot, OpenAI Codex, Gemini CLI, Goose, OpenCode, and about 25 more. One folder, no dependencies, MIT.
+## Scope
+
+This skill is for **instructional writing**: text that tells the reader what to do, or what happened. In scope:
+
+- SOC runbooks and playbooks
+- Training modules, lab guides, and tabletop exercises
+- Analyst onboarding docs
+- Internal incident postmortems and IR notes
+- Tool and project READMEs
+- Error messages and release notes
+- Agent instructions (`AGENTS.md`, prompts)
+- Internal comms: status updates, shift handovers
+- Chat replies and quick rewrites, through the reply register
+- The procedural parts of client deliverables: reproduction steps, remediation instructions
+
+The skill writes for three readers. The default reader is the practitioner, a person who works in security. For this reader, the skill does not define security terms, and it does not expand abbreviations that are standard in the field, such as SIEM or EDR. For the learner, who reads onboarding and training material, the skill defines each term at its first use. For the layperson, who does not work in security, the skill replaces the terms with plain words.
+
+It is not for **evaluative or persuasive writing**: text whose job is to say how likely something is, or to convince the reader of something. That means:
+
+- **Risk narratives and executive summaries.** Honest assessment needs calibrated language — "likely", "may indicate", "low confidence" — and these rules ban exactly those words on purpose.
+- **Official and regulated documents:** breach notifications to regulators, compliance attestations, legal filings. Their wording is fixed by law or contract, not by style.
+- **Public persuasive content** — marketing, talks, blog voice. These rules delete persuasion by design, so applying them here hurts the text.
+
+Some documents mix both kinds. A pentest report has evaluative findings and procedural remediation steps. When that happens, classify the section, not the document: apply the skill to the procedural sections only.
 
 ## Install
 
 Any agent, with the [skills CLI](https://github.com/vercel-labs/skills):
 
 ```bash
-npx skills add AminBlg/SimpleEnglish
+npx skills add MeatBunny/cyber-simple-english
 ```
 
-This installs the skill only. It does not install the session hook or the output style below, so setting `outputStyle` to `simple-english:simple-english` without the plugin does nothing. Use the Claude Code plugin for those.
+This installs the skill only. It does not install the session hook or the output style below, so setting `outputStyle` to `cyber-simple-english:cyber-simple-english` without the plugin does nothing. Use the Claude Code plugin for those.
 
 Claude Code plugin, with the session hook and the output style:
 
 ```bash
-claude plugin marketplace add AminBlg/SimpleEnglish && claude plugin install simple-english@simple-english
+claude plugin marketplace add MeatBunny/cyber-simple-english && claude plugin install cyber-simple-english@cyber-simple-english
 ```
 
-The output style is named `simple-english:simple-english`. The short name does not resolve. Select it with `/config` under Output style, or put `{"outputStyle": "simple-english:simple-english"}` in `~/.claude/settings.json`.
+The output style is named `cyber-simple-english:cyber-simple-english`. The short name does not resolve. Select it with `/config` under Output style, or put `{"outputStyle": "cyber-simple-english:cyber-simple-english"}` in `~/.claude/settings.json`.
 
 Codex plugin, with the session hook:
 
 ```bash
-codex plugin marketplace add AminBlg/SimpleEnglish
-codex plugin add simple-english@simple-english
+codex plugin marketplace add MeatBunny/cyber-simple-english
+codex plugin add cyber-simple-english@cyber-simple-english
 ```
 
-Codex asks you to trust the hook before its first run. The hooks need Node.js. Details in [`src/hooks/README.md`](src/hooks/README.md).
+Codex does not run the hook until you trust it. At the first interactive start, Codex shows "Hooks need review". Select "Trust all and continue", or open `/hooks` and press `t`. Codex saves the trust, and `codex exec` then loads the rules too. Before that, `codex exec` skips the hook and gives no warning. The hooks need Node.js. Details in [`src/hooks/README.md`](src/hooks/README.md).
 
-No skill support? Paste the rule block of [`prompts/system-prompt.md`](prompts/system-prompt.md) into your system prompt, `AGENTS.md`, or `.cursorrules`. The page ends with a 60-token version for tight budgets.
+OpenCode, with the rules and the term table in each session. Add these two lines to the `instructions` array of your `opencode.json`:
 
-Then ask for any technical writing, or say "rewrite this with simple-english".
+```json
+{
+  "instructions": [
+    "https://raw.githubusercontent.com/MeatBunny/cyber-simple-english/main/rules/AGENTS.md",
+    "https://raw.githubusercontent.com/MeatBunny/cyber-simple-english/main/skills/cyber-simple-english/references/cyber-terms.md"
+  ]
+}
+```
+
+This gives OpenCode the rules, not the skill. For the check mode and the reference files, install the skill with the skills CLI command above.
+
+The file check for OpenCode is optional. It needs Python 3 and a local copy of the repository:
+
+```bash
+git clone https://github.com/MeatBunny/cyber-simple-english ~/.config/opencode/cyber-simple-english
+```
+
+Then add the absolute path of the plugin file to the `plugin` array of your `opencode.json`:
+
+```json
+{ "plugin": ["/home/you/.config/opencode/cyber-simple-english/src/hooks/opencode-plugin.mjs"] }
+```
+
+Google Antigravity plugin, with the skill and an always-on rule:
+
+```bash
+agy plugin install https://github.com/MeatBunny/cyber-simple-english
+```
+
+The plugin installs the skill and two always-on rules: the rule block and the term table. Antigravity has no file check, because its hooks cannot send text to the model after a file write.
+
+No skill support? Paste the rule block of [`prompts/system-prompt.md`](prompts/system-prompt.md) into your system prompt, `AGENTS.md`, or `.cursorrules`. The page ends with a short version for tight budgets.
+
+Then ask for any technical writing, or say "rewrite this with cyber-simple-english".
 
 ## See it
 
-Left is real, unedited Claude output. Right is the same model with the skill loaded.
+Left is unedited Claude output with no skill. Right is the same text, rewritten with the skill loaded.
 
 <table>
 <tr>
@@ -66,63 +117,42 @@ Left is real, unedited Claude output. Right is the same model with the skill loa
 <tr>
 <td valign="top">
 
-> Leveraging sqlpipe's robust architecture, users can seamlessly synchronize their Postgres tables to S3 with minimal configuration overhead. Before getting started, you should ensure that your AWS credentials have been properly configured — this is crucial for avoiding frustrating permission issues down the line.
+> `iocscan` is a command-line tool that searches your endpoints for indicators of compromise (such as file hashes, IP addresses, and domains) by querying your EDR platform's API, so you can check many hosts without logging in to each one. Before the first run, make sure your EDR API token has the read scope for both hosts and detections, because `iocscan` can't list endpoints or retrieve results without them.
 
 </td>
 <td valign="top">
 
-> sqlpipe copies your Postgres tables to S3. It needs one configuration file.
+> The `iocscan` command-line tool searches your endpoints for IOCs, such as file hashes, IP addresses, and domains. It queries the API of your EDR platform, so you do not have to log in to each host.
 >
-> Before you start, make sure that your AWS credentials are correct. If they are not, S3 rejects the upload with a permission error.
+> Before the first run, make sure that your EDR API token has the read scope for hosts and the read scope for detections. Without these scopes, `iocscan` cannot list endpoints or get results.
 
 </td>
 </tr>
 </table>
 
-More rewrites in [`examples/before-after.md`](examples/before-after.md): READMEs, runbooks, incident reports, error messages, release notes.
+More rewrites in [`examples/before-after.md`](examples/before-after.md): a README, a runbook entry, an error message, an incident summary, and release notes. Incident reports here means internal IR notes and postmortems, not regulatory filings — see Scope.
 
-## Benchmarks
+## Measurements
 
-Every number below is recomputed from the committed raw files by `python3 evals/check_numbers.py`, which CI runs on every push. All Claude runs: `claude-sonnet-4-6`, low effort, no settings loaded. Judges are Claude models on Claude text, so family bias is possible.
-
-Replies, 8 chat questions with a jargon term each, two runs, [raw files and tables](evals/results/rebuild-2026-09-02/RESULTS.md). Counts are totals over the 16 replies. **95% fewer visible defects** (em-dashes, bold, headers, bullets) with 2.0.1 than with no skill (218 → 11). These counts come from the 2026-09-02 runs of 2.0.1, which still had the five-sentence reply cap that 2.1.0 removed. No run exists yet for 2.1.0 or later. A blind judge preferred 2.0.1 over 2.0.0 in 14 of 16 pairs.
-
-| Condition | words | sentences | em-dashes | bold | headers | bullets |
-|---|---:|---:|---:|---:|---:|---:|
-| no skill | 216 | 16.8 | 62 | 79 | 25 | 52 |
-| 2.0.0 | 184 | 14.4 | 43 | 72 | 4 | 52 |
-| 2.0.1 | 146 | 7.9 | 5 | 2 | 0 | 4 |
-
-On gpt-4.1-mini the same 8 questions went from 23 sentences, 64 bold spans, and 101 bullets per 8 replies. With 2.0.1 they went to 5.2 sentences and zero formatting.
-
-Documents, the 8 sqlpipe writing tasks scored with the STE linter, one run per cell. One run moves by about 0.5 on this model, so read the rows as parity or better, not as a ranking.
-
-| Condition | viol/100w | Reduction |
-|---|---:|---:|
-| no skill | 4.09 | |
-| 1.3.0 | 2.11 | 48% |
-| 2.0.0 | 1.70 | 58% |
-| 2.0.1 | 0.91 | 78% |
-
-The linter history: 81.3% fewer linter violations across 9 Claude models (144 generations, [RESULTS.md](evals/results/RESULTS.md)), plus Pi, opencode, and OpenAI runs in [`evals/results/`](evals/results/). Those numbers reproduce. A [2026-09-02 audit](evals/results/WHY-USELESS-2026-09-02.md) showed that they measure rule obedience, not what a reader sees, which is why 2.0.1 reports the reply counts above.
+This project has no benchmark run of its own yet. [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) publishes measurements for its own releases. Those numbers do not describe Cyber Simple English, because the rule text is different.
 
 ## The rules
 
-Two registers in [`SKILL.md`](skills/simple-english/SKILL.md), about 1,700 tokens. The 53 numbered rules of Issue 9 live in [`rule-catalog.md`](skills/simple-english/references/rule-catalog.md) for check mode and Strict mode.
+Two registers in [`SKILL.md`](skills/cyber-simple-english/SKILL.md). The 53 numbered rules of Issue 9 live in [`rule-catalog.md`](skills/cyber-simple-english/references/rule-catalog.md) for check mode and Strict mode.
 
 The reply, every chat answer:
 
-| Rule | What it kills |
+| Rule | What it removes |
 |---|---|
 | Prose only: no headers, bullets, bold, tables | The wall of formatting around a one-line answer |
 | First sentence answers | The preamble |
 | No em-dashes | The spliced half-thought |
-| Define a concept term in a few words | Jargon the reader has to look up |
+| Define a concept term in a few words, for a learner or a layperson | Jargon the reader has to look up |
 | No contractions, openers, or closers | "Great question!" and "Hope this helps!" |
 
 The document: docs, READMEs, runbooks, error messages, release notes:
 
-| Rule | What it kills |
+| Rule | What it removes |
 |---|---|
 | Max 20 words per instruction, 25 per description | The run-on sentence |
 | Condition before command | Trailing "...if the flag is set" that readers execute too late |
@@ -133,7 +163,7 @@ The document: docs, READMEs, runbooks, error messages, release notes:
 | No bold lead-ins, no heading over two sentences | Decoration that hides the fact |
 | State the fact, not its importance | "crucial", "robust", "not just X, it is Y" |
 
-Two modes. Plain, the default, is all of the above. Strict adds the STE dictionary discipline from [`strict-vocabulary.md`](skills/simple-english/references/strict-vocabulary.md) when you name STE, ASD-STE100, or compliance. The reply stays Plain in every mode.
+Two modes. Plain, the default, is all of the above. Strict adds the STE dictionary discipline from [`strict-vocabulary.md`](skills/cyber-simple-english/references/strict-vocabulary.md) when you name STE, ASD-STE100, or compliance. The reply stays Plain in every mode.
 
 ## FAQ
 
@@ -145,19 +175,28 @@ Why not just prompt "write clearly"? "Clearly" is an opinion. "No sentence over 
 
 Why a 40-year-old aerospace standard? It is maintained (Issue 9, January 2025), numbered, and testable. It is also a near-perfect negative of every AI writing tell.
 
-How was it built? Against the primary Issue 9 text, not summaries. A community audit ([#4](https://github.com/AminBlg/SimpleEnglish/issues/4)) checked the vocabulary tables against the dictionary. Scenarios and recorded results: [`evals/pressure-tests.md`](evals/pressure-tests.md).
-
-## Star history
-
-[![Star History Chart](https://api.star-history.com/chart?repos=AminBlg/SimpleEnglish&type=date&legend=top-left)](https://www.star-history.com/?repos=AminBlg%2FSimpleEnglish&type=date&legend=top-left)
+How was it built? SimpleEnglish built the rules from the primary Issue 9 text, not from summaries. This project adds the cybersecurity term table and the rules for technical formatting. Test scenarios: [`evals/pressure-tests.md`](evals/pressure-tests.md).
 
 ## Word-choice linter
 
 `evals/ste_lint.py` measures the mechanical rules and cannot see word choice. [`tools/ste-dictionary/`](tools/ste-dictionary/README.md) holds an extractor that builds the word lists from your own copy of the free Issue 9 PDF. A linter reads them. The repository ships the tool and no dictionary content, because the standard forbids reproduction without written authority from ASD.
 
+The same linter reads the cybersecurity term table of this project, [`cyber-terms.md`](skills/cyber-simple-english/references/cyber-terms.md), and counts the terms that the table says to replace. This count needs no dictionary files. In the Claude Code plugin, the advisory file check names these terms after each Markdown write. The check does not block.
+
 ## Contributing
 
-Open an issue for questions and bug reports. Pull requests are welcome. A change that moves a published number ships the raw files with it, and `python3 evals/check_numbers.py` must pass. Run `python3 evals/ste_lint.py --self-test` before you push. Say in the PR whether an agent wrote the code, and do not add attribution trailers.
+Open an issue for questions and bug reports. Pull requests are welcome. `python3 evals/check_numbers.py` must pass. It checks that the copies of the rule block and the version strings agree. Run `python3 evals/ste_lint.py --self-test` before you push. Say in the PR whether an agent wrote the code, and do not add attribution trailers.
+
+A new row in [`cyber-terms.md`](skills/cyber-simple-english/references/cyber-terms.md) must record these points:
+
+1. The spelling and the capitals that the maker or the standard uses, with the source that you opened.
+2. The part of speech that is permitted.
+3. A second meaning or a word that looks almost the same, if one exists.
+4. For an abbreviation: if it is standard in the field, and how a practitioner says it, for "a" or "an".
+5. Code font or normal font.
+6. The definition in ten words or fewer.
+7. The plain words for a layperson.
+8. If the linter can flag the term without the sense.
 
 ## License
 

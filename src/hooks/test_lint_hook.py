@@ -1,7 +1,7 @@
 import json, os, pathlib, subprocess, sys, tempfile
 HERE = pathlib.Path(__file__).resolve().parent
 HOOK = HERE / "lint_hook.py"
-CLEAN = {"CLAUDE_CONFIG_DIR": "/nonexistent/claude-config", "SIMPLE_ENGLISH_LINT_EXCLUDE": ""}
+CLEAN = {"CLAUDE_CONFIG_DIR": "/nonexistent/claude-config", "CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE": ""}
 SLOP = "You should simply leverage the robust tool, making it seamless.\n"
 
 def run(event, env=None):
@@ -32,6 +32,15 @@ def test_post_tool_use_prints_the_offending_text_and_line_number():
     assert "line 3, banned_modal: should" in err, err
     assert "line 3, perfect_tense: has been" in err, err
 
+def test_post_tool_use_names_the_cyber_terms_to_replace():
+    with tempfile.TemporaryDirectory() as d:
+        path = pathlib.Path(d, "runbook.md")
+        path.write_text("Isolate the host in the EDR console. Then remediate the vulnerability.\n", encoding="utf-8")
+        code, out, err = run(post(str(path)))
+    assert code == 2 and "0 STE violations and 1 cyber term(s)" in err, (code, err)
+    assert "cyber term: remediate -> name the action" in err, err
+    assert "EDR" not in err, err  # a standard abbreviation needs no expansion
+
 def test_post_tool_use_ignores_clean_file_and_non_markdown():
     with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as f:
         f.write("Run the migration. Then restart the service.\n"); path = f.name
@@ -53,7 +62,7 @@ def test_post_tool_use_honours_the_exclude_globs():
         path = write_slop(d)
         assert run(post(path))[0] == 2
         globs = os.pathsep.join(["~/no-such-file.md", f"{d}/*.md"])
-        assert run(post(path), env={"SIMPLE_ENGLISH_LINT_EXCLUDE": globs})[0] == 0
+        assert run(post(path), env={"CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE": globs})[0] == 0
 
 def test_post_tool_use_resolves_a_relative_path_against_the_event_cwd():
     with tempfile.TemporaryDirectory() as d:
@@ -84,7 +93,7 @@ def test_post_tool_use_matches_a_glob_through_a_symlinked_directory():
         pathlib.Path(d, "notes").symlink_to(pathlib.Path(d, "store"))
         path = str(pathlib.Path(d, "notes", "notes.md"))
         assert run(post(path))[0] == 2
-        assert run(post(path), env={"SIMPLE_ENGLISH_LINT_EXCLUDE": f"{d}/notes/*"})[0] == 0
+        assert run(post(path), env={"CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE": f"{d}/notes/*"})[0] == 0
 
 def test_stop_flags_slop_reply_and_never_blocks():
     long = "Great question! " + "This is a robust sentence. " * 7 + "I hope this helps!"
@@ -94,7 +103,7 @@ def test_stop_flags_slop_reply_and_never_blocks():
     assert "opener" in msg and "closer" in msg and "slop" in msg, msg
 
 def test_stop_does_not_count_sentences():
-    """The reply register has no sentence cap since 2.1.0. Length alone is not a defect."""
+    """The reply register has no sentence cap. Length alone is not a defect."""
     reply = " ".join(f"The step {i} runs." for i in range(20))
     code, out, err = run({"hook_event_name": "Stop", "last_assistant_message": reply})
     assert code == 0 and out.strip() == "", (code, out)

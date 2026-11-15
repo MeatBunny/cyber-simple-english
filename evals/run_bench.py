@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark the simple-english skill across models.
+"""Benchmark the cyber-simple-english skill across models.
 
 For each model x condition x scenario, runs a headless `claude -p` call,
 lints the output with ste_lint.py, and aggregates to results.json +
@@ -28,7 +28,7 @@ import time
 import ste_lint
 
 HERE = pathlib.Path(__file__).resolve().parent
-SKILL = HERE.parent / "skills" / "simple-english" / "SKILL.md"
+SKILL = HERE.parent / "skills" / "cyber-simple-english" / "SKILL.md"
 RESULTS = HERE / "results"
 RAW = RESULTS / "raw"
 MODELS = [
@@ -188,10 +188,9 @@ def judge_summary():
     lines += [
         "",
         "Caveats: one judge model, judged once per order. The judge is a Claude",
-        "model and the texts are Claude output, so family bias is possible. Pairs",
-        "judged before effort pinning inherited the ambient setting, so the judge",
-        f"pass is not uniform: {recorded_effort} of {len(files)} judge files record a",
-        "`judge_effort` and the rest pre-date the pin. Raw judge files:",
+        "model and the texts are Claude output, so family bias is possible.",
+        f"{recorded_effort} of {len(files)} judge files record a `judge_effort`.",
+        "Raw judge files:",
         "results/raw/*__judge__*.json. Reproduce with",
         "`python3 evals/run_bench.py --judge`.",
     ]
@@ -229,10 +228,8 @@ def report(table, meta, effort):
         "  higher by design. Output tokens are reported; draw your own conclusion.",
         f"- Reasoning effort is pinned to `{effort}` and recorded per raw file. Levels",
         "  present in raw/: " + ", ".join(f"`{e}`" for e in meta["efforts"]) + ".",
-        "  Rows marked unrecorded pre-date the pin and inherited the ambient effortLevel;",
-        f"  the table assumes they are also `{DEFAULT_EFFORT}`, which matches their measured",
-        "  output-token profile, but treat that as inferred. Effort moves the numbers,",
-        "  so compare rows only at the same effort.",
+        "  Rows marked unrecorded have no recorded effort level. Effort moves the",
+        "  numbers, so compare rows only at the same effort.",
         "- Output tokens include reasoning tokens. The highest `thinking_tokens` in",
         f"  raw/ is {meta['max_thinking_tokens']}. "
         + ("The column is final text." if not meta["max_thinking_tokens"]

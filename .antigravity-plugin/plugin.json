@@ -1,0 +1,27 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "cyber-simple-english",
+  "displayName": "Cyber Simple English",
+  "version": "1.0.0",
+  "description": "Write clear, unambiguous cybersecurity documentation and training content, based on the rules of ASD-STE100 Simplified Technical English: short sentences, one word one meaning, active voice, condition before command, no definitions that a security reader does not need.",
+  "author": {
+    "name": "meatbunny"
+  },
+  "homepage": "https://github.com/MeatBunny/cyber-simple-english",
+  "repository": "https://github.com/MeatBunny/cyber-simple-english",
+  "license": "MIT",
+  "keywords": [
+    "technical-writing",
+    "documentation",
+    "ste",
+    "asd-ste100",
+    "cybersecurity",
+    "incident-response",
+    "runbooks",
+    "training"
+  ],
+  "suggestedPrompts": [
+    "Rewrite this runbook with cyber-simple-english.",
+    "Check this document for Cyber Simple English violations."
+  ]
+}

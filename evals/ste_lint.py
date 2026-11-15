@@ -38,8 +38,9 @@ SLOP_TSV = pathlib.Path(__file__).resolve().parent / "slop.tsv"
 def slop_pattern():
     """Union of the measured core list and evals/slop.tsv (term, count, swap).
 
-    The TSV is the 69-term LLM-tell lexicon: words named by 8 or more of 122
-    published ban lists. Falls back to the core list when the file is absent.
+    The TSV is a 69-term LLM-tell lexicon from the SimpleEnglish project. Column 2
+    is the number of published ban lists that name the term, as SimpleEnglish
+    counted them. Falls back to the core list when the file is absent.
     """
     terms = []
     if SLOP_TSV.exists():
@@ -240,7 +241,7 @@ Do not use --force against production.
 The window is 5 - 10 minutes.
 The range is 5–10 minutes, over the 2024–2025 season.
 Write x - y = z on the board.
-Use the `--config sqlpipe.yaml` flag.
+Use the `--config iocscan.yaml` flag.
 Remove the panel:
    -   Loosen the four bolts.
 """

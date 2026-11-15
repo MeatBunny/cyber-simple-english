@@ -1,19 +1,23 @@
 {
-  "name": "simple-english",
-  "displayName": "Simple English",
-  "description": "Write plain, layman-readable English with the discipline of ASD-STE100 Simplified Technical English: short sentences, one word one meaning, active voice, condition before command, terms defined at first use.",
-  "version": "2.1.1",
+  "name": "cyber-simple-english",
+  "displayName": "Cyber Simple English",
+  "description": "Write clear, unambiguous cybersecurity documentation and training content, based on the rules of ASD-STE100 Simplified Technical English: short sentences, one word one meaning, active voice, condition before command, no definitions that a security reader does not need.",
+  "version": "1.0.0",
   "author": {
-    "name": "AminBlg"
+    "name": "meatbunny"
   },
-  "homepage": "https://github.com/AminBlg/SimpleEnglish",
-  "repository": "https://github.com/AminBlg/SimpleEnglish",
+  "homepage": "https://github.com/MeatBunny/cyber-simple-english",
+  "repository": "https://github.com/MeatBunny/cyber-simple-english",
   "license": "MIT",
   "keywords": [
     "technical-writing",
     "documentation",
     "ste",
-    "asd-ste100"
+    "asd-ste100",
+    "cybersecurity",
+    "incident-response",
+    "runbooks",
+    "training"
   ],
   "hooks": {
     "SessionStart": [
@@ -21,9 +25,29 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/simple-english-activate.js\"",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/cyber-simple-english-activate.js\" --no-pointer",
             "timeout": 5,
-            "statusMessage": "Loading Simple English..."
+            "statusMessage": "Loading Cyber Simple English..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/cyber-simple-english-activate.js\" --cyber 1",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/cyber-simple-english-activate.js\" --cyber 2",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/cyber-simple-english-activate.js\" --cyber 3",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/cyber-simple-english-activate.js\" --cyber 4",
+            "timeout": 5
           }
         ]
       }
@@ -36,7 +60,7 @@
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/src/hooks/lint_hook.py\"",
             "timeout": 10,
-            "statusMessage": "Simple English: checking the file..."
+            "statusMessage": "Cyber Simple English: checking the file..."
           }
         ]
       }

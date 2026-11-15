@@ -1,24 +1,24 @@
 {
-  "name": "simple-english",
+  "name": "cyber-simple-english",
   "owner": {
-    "name": "AminBlg",
-    "url": "https://github.com/AminBlg"
+    "name": "meatbunny",
+    "url": "https://github.com/MeatBunny"
   },
-  "description": "ASD-STE100 Simplified Technical English skill for clear, unambiguous technical writing.",
+  "description": "Cybersecurity documentation and training content skill for clear, unambiguous writing, based on the rules of ASD-STE100 Simplified Technical English.",
   "plugins": [
     {
-      "name": "simple-english",
+      "name": "cyber-simple-english",
       "source": "./",
-      "displayName": "Simple English",
-      "description": "Write plain, layman-readable English with the discipline of ASD-STE100 Simplified Technical English: short sentences, one word one meaning, active voice, condition before command, terms defined at first use.",
-      "version": "2.1.1",
+      "displayName": "Cyber Simple English",
+      "description": "Write clear, unambiguous cybersecurity documentation and training content, based on the rules of ASD-STE100 Simplified Technical English: short sentences, one word one meaning, active voice, condition before command, no definitions that a security reader does not need.",
+      "version": "1.0.0",
       "author": {
-        "name": "AminBlg"
+        "name": "meatbunny"
       },
-      "homepage": "https://github.com/AminBlg/SimpleEnglish",
-      "repository": "https://github.com/AminBlg/SimpleEnglish",
+      "homepage": "https://github.com/MeatBunny/cyber-simple-english",
+      "repository": "https://github.com/MeatBunny/cyber-simple-english",
       "license": "MIT",
-      "keywords": ["technical-writing", "documentation", "ste", "asd-ste100"]
+      "keywords": ["technical-writing", "documentation", "ste", "asd-ste100", "cybersecurity", "incident-response", "runbooks", "training"]
     }
   ]
 }

@@ -3,6 +3,16 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+// SessionStart hook of the Claude Code and Codex plugins.
+//
+// Codex: `additionalContextLimit: 0` in .codex-plugin/hooks.json means no limit;
+// the default cuts a hook output at about 2,500 tokens. Codex skips a hook that
+// the user did not trust, with no warning. An unattended run with no interactive
+// start needs `codex exec --dangerously-bypass-hook-trust`. A change to the hook
+// needs a new trust review.
+// Antigravity gets the rules from rules/ and has no file check: its PostToolUse
+// hook cannot return text to the model.
+//
 // Claude Code caps hook stdout at 10,000 characters. Anything above that is
 // written to a file and replaced by a preview, which defeats the hook.
 const MAX_CHARS = 9500;

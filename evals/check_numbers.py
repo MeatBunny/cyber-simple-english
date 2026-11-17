@@ -9,8 +9,9 @@ Checks:
 - The rule block: prompts/system-prompt.md, rules/AGENTS.md, and output-styles/cyber-simple-english.md
   carry the same text, and SKILL.md carries the same reply rules.
 - rules/cyber-terms.md is a copy of the term table in the skill, after its frontmatter.
+  Antigravity applies a rule only if the frontmatter has `trigger: always_on`.
 - SKILL.md carries a copy of the term table from "## Terms to constrain" to the end.
-- The version string in SKILL.md, the four manifests, and the README badge.
+- The version string in SKILL.md and the four manifests.
 
 The project publishes no benchmark numbers yet. When it does, add the check of
 each published number against its raw files here.
@@ -20,7 +21,6 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-README = (ROOT / "README.md").read_text(encoding="utf-8")
 problems = []
 
 
@@ -60,7 +60,6 @@ def versions():
     for f in (".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", ".codex-plugin/plugin.json",
               ".antigravity-plugin/plugin.json"):
         v[f] = re.search(r'"version":\s*"([^"]+)"', (ROOT / f).read_text()).group(1)
-    v["README badge"] = re.search(r"badge/version-([0-9.]+)-", README).group(1)
     if len(set(v.values())) != 1:
         problems.append(f"version strings differ: {v}")
 

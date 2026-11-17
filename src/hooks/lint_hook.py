@@ -8,8 +8,11 @@ it. The same check names each cybersecurity term that
 skills/cyber-simple-english/references/cyber-terms.md says to replace. Exit 2 on PostToolUse is advisory: the tool already ran. Agent-internal
 Markdown, such as memory files under the Claude configuration directory, is
 skipped. The writing rules do not govern it, and a summary of its
-violations only spends tokens. Set CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE to skip more
-paths.
+violations only spends tokens. Each path with a `.claude` directory component is
+also skipped. Set CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE to skip more paths: glob
+patterns for absolute paths, separated by os.pathsep. `*` also matches `/`, a
+leading `~` is expanded, and the value `*` stops the file check. The Stop check
+has no off switch.
 
 Stop: read `last_assistant_message`, check the reply register (no headers,
 bullets, bold, or em-dashes), and return a systemMessage only when the reply

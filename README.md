@@ -1,74 +1,70 @@
-# cyber-simple-english
+# Cyber Simple English
 
-Cyber Simple English is based on [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) by AminBlg. AminBlg wrote the rule engine, the skill, and the eval harness. This project adapts them for cybersecurity documentation and training.
-
-<p align="center">
-  An agent skill that makes LLMs write clear, unambiguous cybersecurity documentation and training material.<br>
-  Built on the writing rules of <a href="https://www.asd-ste100.org/">ASD-STE100 Simplified Technical English</a>, the controlled language aerospace has used since 1983 so a tired mechanic cannot misread an instruction.<br>
-  Plain by default, strict on request.
-</p>
-
-<p align="center">
-  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/SKILL.md-open_standard-blue?style=flat" alt="Agent Skills"></a>
-  <a href="skills/cyber-simple-english/SKILL.md"><img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat" alt="version 1.0.0"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat" alt="MIT"></a>
-</p>
-
-Tested in seven agents: Claude Code, OpenAI Codex, OpenCode, Google Antigravity, Gemini CLI, GitHub Copilot CLI, and Goose. Other agents that read the [Agent Skills standard](https://agentskills.io) can install the skill, but this project does not test them. One folder, no dependencies, MIT.
+This agent skill makes an AI coding agent write cybersecurity documentation, training material, and chat replies in a controlled, simple English. The skill is built on the writing rules of [ASD-STE100](https://www.asd-ste100.org/). The rules are in [SKILL.md](skills/cyber-simple-english/SKILL.md).
 
 ## Scope
 
-This skill is for **instructional writing**: text that tells the reader what to do, or what happened. In scope:
+Use the skill for text that tells the reader what to do or what happened: runbooks, playbooks, training modules, lab guides, incident notes, READMEs, error messages, release notes, status updates, and chat replies.
 
-- SOC runbooks and playbooks
-- Training modules, lab guides, and tabletop exercises
-- Analyst onboarding docs
-- Internal incident postmortems and IR notes
-- Tool and project READMEs
-- Error messages and release notes
-- Agent instructions (`AGENTS.md`, prompts)
-- Internal comms: status updates, shift handovers
-- Chat replies and quick rewrites, through the reply register
-- The procedural parts of client deliverables: reproduction steps, remediation instructions
+Do not use it for text that evaluates or persuades:
 
-The skill writes for three readers. The default reader is the practitioner, a person who works in security. For this reader, the skill does not define security terms, and it does not expand abbreviations that are standard in the field, such as SIEM or EDR. For the learner, who reads onboarding and training material, the skill defines each term at its first use. For the layperson, who does not work in security, the skill replaces the terms with plain words.
+- A risk narrative or an executive summary needs words such as "likely" and "may indicate". The rules ban these words.
+- A breach notification, an attestation, or a legal filing has wording that a law or a contract fixes.
+- Marketing text needs persuasion. The rules delete it.
 
-It is not for **evaluative or persuasive writing**: text whose job is to say how likely something is, or to convince the reader of something. That means:
-
-- **Risk narratives and executive summaries.** Honest assessment needs calibrated language — "likely", "may indicate", "low confidence" — and these rules ban exactly those words on purpose.
-- **Official and regulated documents:** breach notifications to regulators, compliance attestations, legal filings. Their wording is fixed by law or contract, not by style.
-- **Public persuasive content** — marketing, talks, blog voice. These rules delete persuasion by design, so applying them here hurts the text.
-
-Some documents mix both kinds. A pentest report has evaluative findings and procedural remediation steps. When that happens, classify the section, not the document: apply the skill to the procedural sections only.
+In a mixed document, such as a penetration test report, apply the skill only to the procedural sections: the reproduction steps and the remediation instructions.
 
 ## Install
 
-Gemini CLI, GitHub Copilot CLI, Goose, and each other agent that reads the Agent Skills standard, with the [skills CLI](https://github.com/vercel-labs/skills):
+The project is tested with the seven agents below. Other agents that read the [Agent Skills](https://agentskills.io) standard are not tested. They can install the skill with the Gemini CLI command.
 
-```bash
-npx skills add MeatBunny/cyber-simple-english
+### Claude Code
+
+```
+claude plugin marketplace add MeatBunny/cyber-simple-english
+claude plugin install cyber-simple-english@cyber-simple-english
 ```
 
-This installs the skill only. It does not install the session hook or the output style below, so setting `outputStyle` to `cyber-simple-english:cyber-simple-english` without the plugin does nothing. Use the Claude Code plugin for those.
+The plugin installs these items:
 
-Claude Code plugin, with the session hook and the output style:
+- The skill
+- A hook that loads the rules in each session
+- A check of each Markdown file that the agent writes
+- A check of each reply
+- An output style
 
-```bash
-claude plugin marketplace add MeatBunny/cyber-simple-english && claude plugin install cyber-simple-english@cyber-simple-english
+The hooks need Node.js and Python 3. The checks are advisory and block nothing.
+
+The output style is optional. Select it in `/config` under **Output style**, or add this line to `~/.claude/settings.json`. The short name does not resolve.
+
+```json
+{"outputStyle": "cyber-simple-english:cyber-simple-english"}
 ```
 
-The output style is named `cyber-simple-english:cyber-simple-english`. The short name does not resolve. Select it with `/config` under Output style, or put `{"outputStyle": "cyber-simple-english:cyber-simple-english"}` in `~/.claude/settings.json`.
+To exclude files from the file check, set `CYBER_SIMPLE_ENGLISH_LINT_EXCLUDE` to a list of glob patterns for absolute paths. Separate the patterns with `:` (on Windows, with `;`). To stop the file check, set the variable to `*`.
 
-Codex plugin, with the session hook:
+### OpenAI Codex
 
-```bash
+```
 codex plugin marketplace add MeatBunny/cyber-simple-english
 codex plugin add cyber-simple-english@cyber-simple-english
 ```
 
-Codex does not run the hook until you trust it. At the first interactive start, Codex shows "Hooks need review". Select "Trust all and continue", or open `/hooks` and press `t`. Codex saves the trust, and `codex exec` then loads the rules too. Before that, `codex exec` skips the hook and gives no warning. The hooks need Node.js. Details in [`src/hooks/README.md`](src/hooks/README.md).
+The plugin installs the skill and a hook that loads the rules in each session. The hook needs Node.js.
 
-OpenCode, with the rules and the term table in each session. Add these two lines to the `instructions` array of your `opencode.json`:
+Codex does not run the hook until you trust it. Start Codex one time in interactive mode. At the "Hooks need review" prompt, select **Trust all and continue**, or type `/hooks` and then press **t**. If you do not trust the hook, `codex exec` skips it and shows no warning.
+
+### Gemini CLI, GitHub Copilot CLI, Goose
+
+```
+npx skills add MeatBunny/cyber-simple-english
+```
+
+This command uses the [skills CLI](https://github.com/vercel-labs/skills). It installs the skill only, with no hooks and no output style.
+
+### OpenCode
+
+Add these two URLs to the `instructions` array of `opencode.json`. OpenCode then loads the rules and the term table in each session.
 
 ```json
 {
@@ -79,125 +75,73 @@ OpenCode, with the rules and the term table in each session. Add these two lines
 }
 ```
 
-This gives OpenCode the rules, not the skill. For the check mode and the reference files, install the skill with the skills CLI command above.
+The URLs do not install the skill. For the check mode and the reference files, also run the `npx skills add` command above.
 
-The file check for OpenCode is optional. It needs Python 3 and a local copy of the repository:
+The file check is optional and needs Python 3 and a local clone:
 
-```bash
+```
 git clone https://github.com/MeatBunny/cyber-simple-english ~/.config/opencode/cyber-simple-english
 ```
 
-Then add the absolute path of the plugin file to the `plugin` array of your `opencode.json`:
+Then add the absolute path of `src/hooks/opencode-plugin.mjs` in the clone to the `plugin` array of `opencode.json`.
 
-```json
-{ "plugin": ["/home/you/.config/opencode/cyber-simple-english/src/hooks/opencode-plugin.mjs"] }
+### Google Antigravity
+
 ```
-
-Google Antigravity plugin, with the skill and an always-on rule:
-
-```bash
 agy plugin install https://github.com/MeatBunny/cyber-simple-english
 ```
 
-The plugin installs the skill and two always-on rules: the rule block and the term table. Antigravity has no file check, because its hooks cannot send text to the model after a file write.
+The plugin installs the skill and two rules that are always on: the rule block and the term table.
 
-No skill support? Paste the rule block of [`prompts/system-prompt.md`](prompts/system-prompt.md) into your system prompt, `AGENTS.md`, or `.cursorrules`. The page ends with a short version for tight budgets.
+### An agent with no skill support
 
-Then ask for any technical writing, or say "rewrite this with cyber-simple-english".
+Paste the rule block of [prompts/system-prompt.md](prompts/system-prompt.md) into the system prompt, `AGENTS.md`, or `.cursorrules`.
 
-## See it
+## Use
 
-Left is unedited Claude output with no skill. Right is the same text, rewritten with the skill loaded.
+Ask the agent for technical writing, or say "rewrite this with cyber-simple-english". The skill has two more modes:
 
-<table>
-<tr>
-<th width="50%">Without skill</th>
-<th width="50%">With skill</th>
-</tr>
-<tr>
-<td valign="top">
+- To get a list of the rule violations, ask the agent to check a text. The list has a rewrite for each violation.
+- To apply the STE vocabulary also, name ASD-STE100 in the request. No tool can guarantee compliance with the standard.
 
-> `iocscan` is a command-line tool that searches your endpoints for indicators of compromise (such as file hashes, IP addresses, and domains) by querying your EDR platform's API, so you can check many hosts without logging in to each one. Before the first run, make sure your EDR API token has the read scope for both hosts and detections, because `iocscan` can't list endpoints or retrieve results without them.
+## Lint a file without an agent
 
-</td>
-<td valign="top">
+`evals/ste_lint.py` counts the violations of the writing rules. `tools/ste-dictionary/ste_dict_lint.py` counts the security terms to replace. The start of each file gives the usage and the limits.
 
-> The `iocscan` command-line tool searches your endpoints for IOCs, such as file hashes, IP addresses, and domains. It queries the API of your EDR platform, so you do not have to log in to each host.
->
-> Before the first run, make sure that your EDR API token has the read scope for hosts and the read scope for detections. Without these scopes, `iocscan` cannot list endpoints or get results.
+`ste_dict_lint.py` can also count the words that the STE dictionary does not approve. The repository cannot include the dictionary, so you must build the word lists from your own copy of the standard. ASD supplies the Issue 9 PDF at no cost on [request](https://www.asd-ste100.org/request.html). The commands below need `pdftotext`. The file names in the commands are fixed.
 
-</td>
-</tr>
-</table>
+```
+cd tools/ste-dictionary
+pdftotext -layout /path/to/ASD-STE100-Issue-9.pdf ste9.txt
+python3 parse_dict.py
+python3 emit.py
+```
 
-More rewrites in [`examples/before-after.md`](examples/before-after.md): a README, a runbook entry, an error message, an incident summary, and release notes. Incident reports here means internal IR notes and postmortems, not regulatory filings — see Scope.
+## Contribute
 
-## Measurements
+Use an issue for a question or a bug. Pull requests are welcome.
 
-This project has no benchmark run of its own yet. [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) publishes measurements for its own releases. Those numbers do not describe Cyber Simple English, because the rule text is different.
+- Before you push, run the five commands in [check.yml](.github/workflows/check.yml).
+- The rule block, the term table, and the version each have copies in more than one file. The start of `evals/check_numbers.py` lists the copies. Change all copies together.
+- If an agent wrote the code, say so in the pull request.
+- Do not put attribution trailers on commits or pull requests.
+- A change to a row of the term table ([cyber-terms.md](skills/cyber-simple-english/references/cyber-terms.md)) needs the approval of the maintainer.
 
-## The rules
+For a new row in the term table, record these items in the pull request:
 
-Two registers in [`SKILL.md`](skills/cyber-simple-english/SKILL.md). The 53 numbered rules of Issue 9 live in [`rule-catalog.md`](skills/cyber-simple-english/references/rule-catalog.md) for check mode and Strict mode.
+- The spelling and the capitals that the maker or the standard uses, and the source that you opened
+- The permitted part of speech
+- Each second meaning, and each word that is almost the same
+- For an abbreviation: if it is standard in the field, and how a person says it (for "a" or "an")
+- Code font or normal font
+- A definition in ten words or fewer
+- Plain words for a layperson
+- If the linter can flag the term when it does not know the sense
 
-The reply, every chat answer:
+The `evals` directory also holds benchmark scripts. The project publishes no benchmark numbers yet.
 
-| Rule | What it removes |
-|---|---|
-| Prose only: no headers, bullets, bold, tables | The wall of formatting around a one-line answer |
-| First sentence answers | The preamble |
-| No em-dashes | The spliced half-thought |
-| Define a concept term in a few words, for a learner or a layperson | Jargon the reader has to look up |
-| No contractions, openers, or closers | "Great question!" and "Hope this helps!" |
+## Credit and legal
 
-The document: docs, READMEs, runbooks, error messages, release notes:
+This project started from [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) 2.1.1 by AminBlg, who wrote the rule engine, the skill, and the eval harness. The license is [MIT](LICENSE).
 
-| Rule | What it removes |
-|---|---|
-| Max 20 words per instruction, 25 per description | The run-on sentence |
-| Condition before command | Trailing "...if the flag is set" that readers execute too late |
-| Simple tenses, active voice | "has been updated", ", making it easy to..." |
-| No should/would/may/might | Hedging. `can`, `will`, `must` survive |
-| One word = one meaning, whole document | check/verify/confirm/validate roulette |
-| Keep articles, keep "that" | Telegraph style. STE is short, not terse |
-| No bold lead-ins, no heading over two sentences | Decoration that hides the fact |
-| State the fact, not its importance | "crucial", "robust", "not just X, it is Y" |
-
-Two modes. Plain, the default, is all of the above. Strict adds the STE dictionary discipline from [`strict-vocabulary.md`](skills/cyber-simple-english/references/strict-vocabulary.md) when you name STE, ASD-STE100, or compliance. The reply stays Plain in every mode.
-
-## FAQ
-
-Does this make output STE-certified? No. Nothing does, because ASD certifies no tool. Strict mode gets close. Word-level rulings live in the official standard, a [free download](https://www.asd-ste100.org/request.html).
-
-Will my docs sound robotic? They will sound like Airbus manuals: flat and impossible to misread. For docs that is the whole point. Keep your voice for your blog.
-
-Why not just prompt "write clearly"? "Clearly" is an opinion. "No sentence over 20 words" is a spec. Agents follow specs.
-
-Why a 40-year-old aerospace standard? It is maintained (Issue 9, January 2025), numbered, and testable. It is also a near-perfect negative of every AI writing tell.
-
-How was it built? SimpleEnglish built the rules from the primary Issue 9 text, not from summaries. This project adds the cybersecurity term table and the rules for technical formatting. Test scenarios: [`evals/pressure-tests.md`](evals/pressure-tests.md).
-
-## Word-choice linter
-
-`evals/ste_lint.py` measures the mechanical rules and cannot see word choice. [`tools/ste-dictionary/`](tools/ste-dictionary/README.md) holds an extractor that builds the word lists from your own copy of the free Issue 9 PDF. A linter reads them. The repository ships the tool and no dictionary content, because the standard forbids reproduction without written authority from ASD.
-
-The same linter reads the cybersecurity term table of this project, [`cyber-terms.md`](skills/cyber-simple-english/references/cyber-terms.md), and counts the terms that the table says to replace. This count needs no dictionary files. In the Claude Code plugin, the advisory file check names these terms after each Markdown write. The check does not block.
-
-## Contributing
-
-Open an issue for questions and bug reports. Pull requests are welcome. `python3 evals/check_numbers.py` must pass. It checks that the copies of the rule block and the version strings agree. Run `python3 evals/ste_lint.py --self-test` before you push. Say in the PR whether an agent wrote the code, and do not add attribution trailers.
-
-A new row in [`cyber-terms.md`](skills/cyber-simple-english/references/cyber-terms.md) must record these points:
-
-1. The spelling and the capitals that the maker or the standard uses, with the source that you opened.
-2. The part of speech that is permitted.
-3. A second meaning or a word that looks almost the same, if one exists.
-4. For an abbreviation: if it is standard in the field, and how a practitioner says it, for "a" or "an".
-5. Code font or normal font.
-6. The definition in ten words or fewer.
-7. The plain words for a layperson.
-8. If the linter can flag the term without the sense.
-
-## License
-
-MIT for everything here. The repo paraphrases the rules for teaching and reproduces no spec text or dictionary content. Unofficial project, not affiliated with or endorsed by ASD or STEMG. ASD-STE100 is a registered trademark of ASD.
+This project is unofficial. ASD and STEMG are not affiliated with it and do not endorse it. ASD-STE100 is a registered trademark of ASD. The repository paraphrases the rules. It contains no text from the specification and no content from the dictionary.

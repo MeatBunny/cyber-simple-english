@@ -4,7 +4,8 @@
 // After a write or an edit of a Markdown file, the plugin runs the same file
 // check as the Claude Code hook (lint_hook.py) and adds the hits to the tool
 // output. The check is advisory. The rules and the term table do not come from
-// this plugin: load them with the "instructions" field (see the README).
+// this plugin: load them with the "instructions" field (see "OpenCode" in the
+// README). OpenCode has no check of the chat reply.
 
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';

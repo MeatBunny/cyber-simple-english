@@ -93,6 +93,10 @@ agy plugin install https://github.com/MeatBunny/cyber-simple-english
 
 The plugin installs the skill and two rules that are always on: the rule block and the term table.
 
+### Manual install
+
+Each [release](https://github.com/MeatBunny/cyber-simple-english/releases) has the file `cyber-simple-english-skill-<version>.zip`. Unzip it into the skills directory of your agent, for example `~/.claude/skills/` or `~/.agents/skills/`. The file holds the skill only, with no hooks and no output style.
+
 ### An agent with no skill support
 
 Paste the rule block of [prompts/system-prompt.md](prompts/system-prompt.md) into the system prompt, `AGENTS.md`, or `.cursorrules`.
